@@ -13,8 +13,8 @@ WiMAXの通信料自動取得スクリプト
 
 タスクスケジューラへの登録方法
 $SchedulerParams = @{
-    Action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "$(AbsolutePath)\Main.ps1"
-    Trigger = New-ScheduledTaskTrigger -DaysInterval 1 -Daily -At "00:07 AM"
+    Action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "$(AbsolutePath)\Start.ps1"
+    Trigger = New-ScheduledTaskTrigger -DaysInterval 1 -Daily -At "00:00 AM"
     Settings = New-ScheduledTaskSettingsSet -Hidden -StartWhenAvailable
 }
 Register-ScheduledTask -TaskPath \ -TaskName WiMAX-Meta @SchedulerParams -Force
