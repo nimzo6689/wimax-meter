@@ -1,6 +1,6 @@
 <#
 author     : nizmo6689
-version    : 0.0.1
+version    : 0.1.0
 
 WiMAXの通信料自動取得スクリプト
 
@@ -23,7 +23,10 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "stop"
 
 $settings = . $(Join-Path $PSScriptRoot _Settings.ps1)
+Get-ChildItem $(Join-Path $PSScriptRoot Libs) -Include *.ps1 -Recurse -Force | ForEach-Object {. $_.FullName}
+
 . $(Join-Path $PSScriptRoot Libs | Join-Path -ChildPath _XPathLogic.ps1)
+. $(Join-Path $PSScriptRoot Libs | Join-Path -ChildPath _CsvLogic.ps1)
 
 Initialize -webDriver $settings.Selenium.WebDriver -chromeDriver $settings.Selenium.ChromeDriver
 
@@ -32,31 +35,5 @@ Login -userType $settings.Auth.UserType -encodedPass $settings.Auth.EncodedPass
 $usedData = GetUsedData
 CloseWebDriver
 
-# csvへの算出方式に従って出力、または、上書きする。
-$csvFullName = Join-Path $settings.CsvDir ("wimax_" + [datetime]::Today.ToString("yyyyMM") + ".csv")
-if (Test-Path $csvFullName) {
-    [array]$totalData = Get-Content $csvFullName | ConvertFrom-Csv
-    $count = $totalData.Length
-    if ($totalData[$count - 1].day -ne $usedData.day) {
-        $usedData | Add-Member daily ($usedData.inMonth - $totalData[$count - 1].inMonth)
-        $totalData += $usedData
-        $totalData | ConvertTo-Csv | Select-Object -Skip 1 | Out-File $csvFullName -Force
-    }
-}
-else {
-    if ([datetime]::Today.ToString("dd") -eq "01") {
-        # 月初の処理
-        $csvFullNamePreMonth = Join-Path $settings.CsvDir ("wimax_" + [datetime]::Today.AddDays(-1).ToString("yyyyMM") + ".csv")
-        $totalData = Get-Content $csvFullNamePreMonth | ConvertFrom-Csv
-        $totalData += $usedData
-        $count = $totalData.Length
-        $totalData[$count - 1].inMonth = $usedData.toToday - $totalData[$count - 2].daily
-        $totalData[$count - 1].daily = $totalData[$count - 1].inMonth - $totalData[$count - 2].inMonth
-        $totalData | ConvertTo-Csv | Select-Object -Skip 1 | Out-File $csvFullNamePreMonth -Force
-    }
-    else {
-        # 2日の処理
-        $usedData | Add-Member daily $usedData.inMonth
-        $usedData | ConvertTo-Csv | Select-Object -Skip 1 | Select-Object -Last 2 | Out-File $csvFullName
-    }
-}
+# csvファイルへ使用量を書き込む。
+WriteCsvWithUsedData -csvDir $settings.CsvDir -usedData $usedData
