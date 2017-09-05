@@ -9,7 +9,7 @@ if ([CommandOrigin]::Runspace -eq $MyInvocation.CommandOrigin) {
 }
 
 # SingletonオブジェクトとしてDriverを定義
-function Initialize($webDriver, $chromeDriver) {
+function InitializeWebDriver($webDriver, $chromeDriver) {
     if (!(Test-Path Variable:Script:Driver) -or $Script:Driver -eq $null) {
         Add-Type -Path $webDriver
         $chromeOptions = New-Object OpenQA.Selenium.Chrome.ChromeOptions

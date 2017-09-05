@@ -30,7 +30,7 @@ Get-ChildItem $(Join-Path $PSScriptRoot Libs) -Include *.ps1 -Recurse -Force | F
 . $(Join-Path $PSScriptRoot Libs | Join-Path -ChildPath _XPathLogic.ps1)
 . $(Join-Path $PSScriptRoot Libs | Join-Path -ChildPath _CsvLogic.ps1)
 
-Initialize -webDriver $settings.Selenium.WebDriver -chromeDriver $settings.Selenium.ChromeDriver
+InitializeWebDriver -webDriver $settings.Selenium.WebDriver -chromeDriver $settings.Selenium.ChromeDriver
 
 # 「Speed Wi-Fi NEXT」へアクセスし、通信量を取得する。
 Login -userType $settings.Auth.UserType -encodedPass $settings.Auth.EncodedPass
@@ -39,3 +39,7 @@ CloseWebDriver
 
 # csvファイルへ使用量を書き込む。
 WriteCsvWithUsedData -csvDir $settings.CsvDir -usedData $usedData
+# Excelファイルへ使用量を書き込む。
+InitializeExcel -excelFullName $settings.ExcelFullName
+WriteExcelWithUsedData -usedData $usedData
+CloseExcel
