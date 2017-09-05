@@ -19,6 +19,8 @@ $SchedulerParams = @{
 }
 Register-ScheduledTask -TaskPath \ -TaskName WiMAX-Meta @SchedulerParams -Force
 #>
+using namespace System
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "stop"
 

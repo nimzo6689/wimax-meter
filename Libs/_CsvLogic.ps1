@@ -1,3 +1,4 @@
+using namespace System
 using namespace System.Management.Automation
 
 Set-StrictMode -Version Latest

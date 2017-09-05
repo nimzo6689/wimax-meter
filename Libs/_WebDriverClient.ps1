@@ -1,4 +1,5 @@
-﻿using namespace System.Management.Automation
+﻿using namespace System
+using namespace System.Management.Automation
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "stop"
