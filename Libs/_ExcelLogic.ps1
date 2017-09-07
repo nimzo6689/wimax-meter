@@ -16,21 +16,20 @@ enum Month {
 }
 
 function MonthOf($number) {
-    $ret = switch ($number) {
-        1 { [Month]::Jan }
-        2 { [Month]::Feb }
-        3 { [Month]::Mar }
-        4 { [Month]::Apr }
-        5 { [Month]::May }
-        6 { [Month]::Jun }
-        7 { [Month]::Jul }
-        8 { [Month]::Aug }
-        9 { [Month]::Sep }
-        10 { [Month]::Oct }
-        11 { [Month]::Nov }
-        12 { [Month]::Dec }
-    }
-    return $ret
+    return $(switch ($number) {
+            1 { [Month]::Jan }
+            2 { [Month]::Feb }
+            3 { [Month]::Mar }
+            4 { [Month]::Apr }
+            5 { [Month]::May }
+            6 { [Month]::Jun }
+            7 { [Month]::Jul }
+            8 { [Month]::Aug }
+            9 { [Month]::Sep }
+            10 { [Month]::Oct }
+            11 { [Month]::Nov }
+            12 { [Month]::Dec }
+        })
 }
 
 # SingletonオブジェクトとしてExcelを定義
@@ -46,6 +45,14 @@ function InitializeExcel($excelFullName) {
     }
 }
 
+# セルへ書き込みする。
+function SetUsedDataInRow($row, $daily, $inMonth, $toYesterday, $toToday) {
+    $Script:Sheet.Cells.Item($row, $daily)
+    $Script:Sheet.Cells.Item($row, $inMonth)
+    $Script:Sheet.Cells.Item($row, $toYesterday)
+    $Script:Sheet.Cells.Item($row, $toToday)
+}
+
 # Excelへの算出方式に従って出力する。
 function WriteExcelWithUsedData($usedData) {
     $day = [datetime]::Today.Day
@@ -56,25 +63,19 @@ function WriteExcelWithUsedData($usedData) {
             $Script:Sheet.Activate()
             $row = [datetime]::Today.AddDays(-1).Day + 2
             $daily = $usedData.toToday - $Script:Sheet.Cells.Item($row - 1, 2).Text
-            $Script:Sheet.Cells.Item($row, 2) = $daily
-            $Script:Sheet.Cells.Item($row, 3) = $Script:Sheet.Cells.Item($row - 1, 3).Text + $daily
-            $Script:Sheet.Cells.Item($row, 4) = $usedData.toYesterday
-            $Script:Sheet.Cells.Item($row, 5) = $usedData.toToday
+            SetUsedDataInRow -row $row -daily $daily -inMonth ($Script:Sheet.Cells.Item($row - 1, 3).Text + $daily) \
+            -toYesterday $usedData.toYesterday -toToday $usedData.toToday
         }
         2 {
             $row = $day + 2
-            $Script:Sheet.Cells.Item($row, 2) = $usedData.inMonth
-            $Script:Sheet.Cells.Item($row, 3) = $usedData.inMonth
-            $Script:Sheet.Cells.Item($row, 4) = $usedData.toYesterday
-            $Script:Sheet.Cells.Item($row, 5) = $usedData.toToday
+            SetUsedDataInRow -row $row -daily $usedData.inMonth -inMonth $usedData.inMonth \
+            -toYesterday $usedData.toYesterday -toToday $usedData.toToday
         }
         default {
             $row = $day + 2
             $daily = $usedData.inMonth - $Script:Sheet.Cells.Item($row - 1, 3).Text
-            $Script:Sheet.Cells.Item($row, 2) = $daily
-            $Script:Sheet.Cells.Item($row, 3) = $usedData.inMonth
-            $Script:Sheet.Cells.Item($row, 4) = $usedData.toYesterday
-            $Script:Sheet.Cells.Item($row, 5) = $usedData.toToday
+            SetUsedDataInRow -row $row -daily $daily -inMonth $usedData.inMonth \
+            -toYesterday $usedData.toYesterday -toToday $usedData.toToday
         }
     }
 }
